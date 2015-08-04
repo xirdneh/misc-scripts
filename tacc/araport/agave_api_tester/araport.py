@@ -1,18 +1,18 @@
+#!/usr/bin/env python2.7
 import urllib2
 import urllib
 import json
 import base64
 import pdb
+import getpass
 
 ARAPORT = 'https://api.araport.org'
 ADAMA = ARAPORT + '/community/v0.3'
-USERNAME = 'jcoronel'
-PASSWORD = 'nln1kwyrt'
 APPNAME = 'my_cli_app'
 
-def get_keys():
+def get_keys(username, password):
     pmgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    pmgr.add_password(None, ARAPORT, USERNAME, PASSWORD)
+    pmgr.add_password(None, ARAPORT, username, password)
     h = urllib2.HTTPBasicAuthHandler(pmgr)
     opener = urllib2.build_opener(h)
     data = {'clientName':APPNAME}
@@ -21,7 +21,7 @@ def get_keys():
     json_data = json.loads(response.read())
     return json_data
 
-def get_auth_token(ck, cs):
+def get_auth_token(ck, cs, username, password):
     '''
         We don't use a password manager for the token since /token doesn't do "standard" authorization.
         This means that when urllib2 first tries to access the url it doesn't return a 401, this makes
@@ -29,8 +29,8 @@ def get_auth_token(ck, cs):
         to do this by hand.
     '''
     data = {'grant_type' : 'password',
-            'username' : USERNAME,
-            'password' : PASSWORD,
+            'username' : username,
+            'password' : password,
             'scope' : 'PRODUCTION'
     }
     data = urllib.urlencode(data)
@@ -43,20 +43,19 @@ def get_auth_token(ck, cs):
 
 def call_uri(token, uri, method, data = None):
     print("Access endpoint: {0} \nHTTP Method: {1} \nData: {2}".format(ARAPORT + uri, method, data))
-    if method == 'POST':
+    if method == 'POST' or method == 'PUT':
         d = {}
         print('Data gotten: {0}'.format(data))
-        pdb.set_trace()
+        #pdb.set_trace()
         for pair in data.split(','):
             key = pair.split(':')[0]
             value = pair.split(':')[1]
             d[key] = value
         data = urllib.urlencode(d)
         print('Data to send: {0}'.format(data))
-        request = urllib2.Request(ARAPORT + uri, data)
-    else:
-        request = urllib2.Request(ARAPORT + uri)
+    request = urllib2.Request(ARAPORT + uri, data)
     request.add_header("Authorization", "Bearer " + token)
+    request.get_method = lambda: method
     try:
         response = urllib2.urlopen(request)
         json_data = json.loads(response.read())
@@ -67,29 +66,35 @@ def call_uri(token, uri, method, data = None):
     return False, None
 
 def start():
-    keys_json_data = get_keys()
+    username = raw_input("Username: ")
+    password = getpass.getpass()
+    keys_json_data = get_keys(username, password)
     #print("Keys JSON: {0}".format(keys_json_data))
     consumerSecret = keys_json_data['result']['consumerSecret']
     consumerKey = keys_json_data['result']['consumerKey']
     print("Consumer Key: {0}".format(consumerKey))
     print("Consumer Secret: {0}".format(consumerSecret))
-    token_json_data = get_auth_token(consumerKey, consumerSecret)
-    #print("Token JSON: {0}".format(token_json_data))
+    token_json_data = get_auth_token(consumerKey, consumerSecret, username, password)
+    print("Token JSON: {0}".format(token_json_data))
     token = token_json_data['access_token']
     print("Access Token: {0}".format(token))
     end = False
     while not end:
-        option = raw_input("1 - GET \n 2 - POST\n")
+        option = raw_input("HTTP Method to use?\n")
+        option = option.upper()
         uri = raw_input("URI to call\n")
-        if option == "1":
-            success, data = call_uri(token, uri, 'GET')
-        elif option == "2":
+        if option == 'GET' or option == 'PUT':
+            success, data = call_uri(token, uri, option)
+        elif option == 'POST' or option == 'PUT':
             data = raw_input("What's the data you want to send? (<key>:<value>[,<key>,<value>,...]\n")
-            success, data = call_uri(token, uri, 'POST', data)
+            success, data = call_uri(token, uri, option, data)
         if success:
             print("Data back: {0}".format(json.dumps(data, sort_keys = True, indent = 4)))
+            #for o in data["result"]:
+            #    print("Building {0} #Floors = {1}".format(o["Building"], o["Number of  Floors"]));
         else:
             print("There was an error.")
+        #option = raw_input("What do you want access?")
 
         option = raw_input("Again? \n 1 - Yes \n 2 - No\n")
         if option == "1":
