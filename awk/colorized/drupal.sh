@@ -24,4 +24,7 @@ gawk '
         $0 = gensub(/(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT|PATCH)([^\f]*)HTTP\/[0-9]{1}\.[0-9]{1}/, "\033[4;35m\\0\033[0m", "G", $0);
         print $0;
     }
+    END {
+        print strftime("%Y-%m-%d %H:%M:%S", systime());
+    }
     '
