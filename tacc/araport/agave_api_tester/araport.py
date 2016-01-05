@@ -5,20 +5,26 @@ import json
 import base64
 import pdb
 import getpass
+import requests
+from requests.auth import HTTPBasicAuth
 
-ARAPORT = 'https://api.araport.org'
+ARAPORT = 'https://agave.designsafe-ci.org'
+#ARAPORT = 'https://api.araport.org'
+#ARAPORT = 'https://api.tacc.utexas.edu'
 ADAMA = ARAPORT + '/community/v0.3'
-APPNAME = 'my_cli_app'
+APPNAME = 'jcoronel_cli_dockerosx'
 
 def get_keys(username, password):
+    #response = requests.get(ARAPORT + '/clients/v2', auth=HTTPBasicAuth(username, password))
     pmgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
     pmgr.add_password(None, ARAPORT, username, password)
     h = urllib2.HTTPBasicAuthHandler(pmgr)
     opener = urllib2.build_opener(h)
-    data = {'clientName':APPNAME}
+    data = {"clientName": APPNAME}
     data = urllib.urlencode(data)
     response = opener.open(ARAPORT + '/clients/v2', data)
     json_data = json.loads(response.read())
+    #json_data = response.json()
     return json_data
 
 def get_auth_token(ck, cs, username, password):
@@ -69,7 +75,7 @@ def start():
     username = raw_input("Username: ")
     password = getpass.getpass()
     keys_json_data = get_keys(username, password)
-    #print("Keys JSON: {0}".format(keys_json_data))
+    print("Keys JSON: {0}".format(keys_json_data))
     consumerSecret = keys_json_data['result']['consumerSecret']
     consumerKey = keys_json_data['result']['consumerKey']
     print("Consumer Key: {0}".format(consumerKey))
