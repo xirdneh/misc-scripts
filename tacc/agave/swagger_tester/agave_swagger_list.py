@@ -3,7 +3,7 @@ import sys
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print 'Usage agave_test.py <api_server> <token> <path1> [<path2> ...]'
+        print 'Usage agave_swagger_list.py <api_server> <token> <path1> [<path2> ...]'
     args = sys.argv[1:]
     token = args[0]
     url = args[1]
