@@ -2,9 +2,16 @@
 Tries to colorize some aspects of the django log outputs. Based on the below format.
 
 ##Format expected
-A verbose format: `[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s`  
+ - **django.sh**
+
+        A verbose format: `[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s`  
+
+ - **docker_django.sh**
+        A verbose format: `'[DJANGO] %(levelname)s %(asctime)s %(module)s %(name)s.%(funcName)s:%(lineno)s: %(message)`
 TODO:
- - [ ] Support simpler format: `[%(levelname)s] %(message)s`
+
+ - [ ] Make it more intelligent.
+ - [ ] Allow for customization.
 
 ##Usage
 `tail -f <log file(s)> | django.sh`
