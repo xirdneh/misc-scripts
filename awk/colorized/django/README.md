@@ -7,6 +7,7 @@ Tries to colorize some aspects of the django log outputs. Based on the below for
         A verbose format: `[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s`  
 
  - **docker_django.sh**
+
         A verbose format: `'[DJANGO] %(levelname)s %(asctime)s %(module)s %(name)s.%(funcName)s:%(lineno)s: %(message)`
 TODO:
 
