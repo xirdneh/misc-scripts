@@ -7,15 +7,15 @@ CURSOR_UP_ONE = '\x1b[1A'
 ERASE_LINE = '\x1b[2K'
 
 
-def walk(c, system_id, folder, tab):
+def fs_walk(c, system_id, folder, tab):
     files = c.files.list(systemId = system_id, filePath = folder)
     for f in files:
         if f['name'] == '.' or f['name'] == '..':
             continue
         af = afm.AgaveFolderFile(agave_client = c, file_obj = f)
         print '|' + '-' * tab + af.name
-        print 'AgaveFile: {}'.format(af.as_json())
-        m = af.save_as_metadata()
+        mf = afm.AgaveMetaFolderFile(agave_client = c, meta_obj = af.as_meta_json())
+        mf.save()
         if f['format'] == 'folder':
             walk(c, system_id, f['path'], tab + 1)
 
