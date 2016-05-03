@@ -9,6 +9,7 @@ if __name__ == '__main__':
     url = args[1]
     paths = args[2:]
     c = Agave(api_server = url, token='')
+    import ipdb; ipdb.set_trace()
     resources = c.resources
     for api in resources['apis']:
         if api['path'] not in paths:
