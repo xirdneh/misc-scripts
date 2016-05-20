@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# hook to run tests before pushig
+# 
+
+#git stash -q --keep-index
+
+#NOTE: Update this if you are using something else. is there a way to generalize this?
+eval "$(docker-machine env dev)"
+
+TEST_CMD="docker exec -t portal_django_1 ./manage.py test designsafe.apps.api.data.agave"
+
+# get commits to push
+commits=`git log @{u}..`
+# if no commits (i.e. rebase) don't do anything
+if [ -z "$commits" ]; then
+    exit 0
+fi
+
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+# Use this if if you want to only check test for a specific branch e.g. 'master'
+#if [[ $current_branch = 'master' ]]; then
+
+$TEST_CMD 
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+    echo "failed $CMD"
+    exit 1
+fi
+
+#pop stashed things
+#git stash pop -q
+exit 0
