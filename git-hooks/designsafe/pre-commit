@@ -17,6 +17,12 @@ regexes='ipdb\.set_trace()\|console\.log\|<<<<<<<'
 REPO_PATH=`git rev-parse --show-toplevel`
 REPO_PATH_ESCAPED=${REPO_PATH//\//\\\/}
 
+FILE_NAMES=`git diff --cached --name-only | grep -E $FILES_PATTERN`
+
+if [ -z "$FILE_NAMES" ]; then
+    exit 0
+fi
+
 git diff --cached --name-only | \
     grep -E $FILES_PATTERN | \
     sed -e "s/^/$REPO_PATH_ESCAPED\//" | 
