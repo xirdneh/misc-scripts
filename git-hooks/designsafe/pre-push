@@ -8,7 +8,7 @@
 #NOTE: Update this if you are using something else. is there a way to generalize this?
 eval "$(docker-machine env dev)"
 
-TEST_CMD="docker exec -t portal_django_1 ./manage.py test designsafe.apps.api.data.agave"
+TEST_CMD="docker exec -t portal_django_1 ./manage.py test --settings=designsafe.test_settings"
 
 # get commits to push
 commits=`git log @{u}..`
