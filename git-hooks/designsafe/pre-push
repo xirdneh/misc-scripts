@@ -3,32 +3,40 @@
 # hook to run tests before pushig
 # 
 
-#git stash -q --keep-index
 
+########### USE THIS IF YOU ARE USING DOCKER ##################
 #NOTE: Update this if you are using something else. is there a way to generalize this?
 eval "$(docker-machine env dev)"
 
-TEST_CMD="docker exec -t portal_django_1 ./manage.py test --settings=designsafe.test_settings"
+TEST_CMD="docker exec -t portal_django_1 ./manage.py test --settings=designsafe.test_settings -v 2"
+
+########### USE THIS IF YOU ARE USING VIRTUALENVS ##################
+#ENV_PYTHON="$HOME/.envs/designsafe/bin/python2.7"
+#PROJ_PATH="$HOME/projects/designsafe/portal"
+#TEST_CMD="${ENV_PYTHON} ${PROJ_PATH}/manage.py test --settings=designsafe.test_settings -v 2"
 
 # get commits to push
 commits=`git log @{u}..`
-# if no commits (i.e. rebase) don't do anything
-if [ -z "$commits" ]; then
+res=$?
+# if no commits (i.e. rebase) and getting last log didn't error out don't do anything
+if [ -z "$commits" ] && [ $res -eq 0 ]; then
     exit 0
 fi
 
+if [ $res -eq 0 ]; then
+    echo "There was an error checking the upstream branch. Please see message above. Test will run anyway."
+fi
 current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
 
 # Use this if if you want to only check test for a specific branch e.g. 'master'
 #if [[ $current_branch = 'master' ]]; then
 
+#RUN THE TEST COMMAND
 $TEST_CMD 
 RESULT=$?
 if [ $RESULT -ne 0 ]; then
-    echo "failed $CMD"
+    echo "failed $TEST_CMD"
     exit 1
 fi
 
-#pop stashed things
-#git stash pop -q
 exit 0
